@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<!-- Автоматична публікація воркера та копіювання файлів рушія перед збіркою API -->
+	<Target Name="BuildWorkerBeforeApi" BeforeTargets="Build">
+		<Message Importance="high" Text="=== [Auto-Build] Publishing ChinookWorker to $(TargetDir)Workers... ===" />
+		<Exec Command="dotnet publish &quot;$(MSBuildThisFileDirectory)..\ChinookWorker\ChinookWorker.csproj&quot; -c $(Configuration) -o &quot;$(TargetDir)Workers&quot; --nologo -v q" />
+		<ItemGroup>
+			<EngineFiles Include="$(MSBuildThisFileDirectory)..\Engines\**\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(EngineFiles)" DestinationFolder="$(TargetDir)Workers\%(RecursiveDir)" SkipUnchangedFiles="true" />
+	</Target>
+
+	<!-- Копіювання воркера та файлів рушія до папки публікації при виконанні dotnet publish -->
+	<Target Name="PublishWorkerAfterApi" AfterTargets="Publish">
+		<Message Importance="high" Text="=== [Auto-Publish] Copying Workers to $(PublishDir)Workers... ===" />
+		<ItemGroup>
+			<PublishedWorkerFiles Include="$(TargetDir)Workers\**\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(PublishedWorkerFiles)" DestinationFolder="$(PublishDir)Workers\%(RecursiveDir)" SkipUnchangedFiles="true" />
+	</Target>
+
+</Project>

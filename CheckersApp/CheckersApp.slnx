@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Checkers.Api/Checkers.Api.csproj" />
+  <Project Path="ChinookWorker/ChinookWorker.csproj" />
+</Solution>

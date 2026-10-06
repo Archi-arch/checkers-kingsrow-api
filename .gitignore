@@ -1,0 +1,23 @@
+## Build outputs and packages
+[Bb]in/
+[Oo]bj/
+publish/
+dist/
+
+## Preserve Engines directory holding native binaries, opening books, and endgame tablebases
+!CheckersApp/Engines/
+!Engines/
+
+## Visual Studio & JetBrains IDE caches
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Temporary and OS files
+*.log
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/

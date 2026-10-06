@@ -1,0 +1,282 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<title>KingsRow help</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1>Kingsrow help</h1>
+
+<p>Kingsrow is a checkers program that is used with Martin Fierz's user interface program called
+CheckerBoard. Both Kingsrow and CheckerBoard are free programs that are available for download from
+internet web sites.&nbsp;</p>
+
+<p>Kingsrow calculates its moves using a look ahead search
+algorithm. It can also use both an endgame database and an
+opening book database. An opening book database file is contained in the install
+package, but the endgame database files are separate downloads.
+Visit the <a href="http://edgilbert.org/Checkers/KingsRow.htm">Kingsrow
+web page</a> for more information about obtaining an endgame database.&nbsp; </p>
+
+<h3>Options, Level Menu</h3>
+
+<p>This menu lets you set the search time. Kingsrow will use anywhere from one half to
+three times the
+nominal time you select. There is also an <u>Exact</u> option which will force
+Kingsrow to use exactly the time you select. The <u>Exact</u> option will force
+Kingsrow to abort a search and use the result of the previous shallower search when the time has elapsed,
+which is not
+a very efficient use
+of search time. Don't use <u>Exact</u> unless you need this characteristic. </p>
+
+<h3>Engine, Options Menu </h3>
+
+<p>Use CheckerBoard's Engine, Options menu to set various options for Kingsrow. </p>
+
+<menu>
+  <li><b>Opening book</b>: select one of 4 operating modes for the opening book.
+    <i><b>Best moves</b></i> means that Kingsrow will play only moves that it
+    considers best, based on book score and the number of book moves after them.
+    Use this setting if you want Kingsrow to play its strongest game. <b><i>Good
+    moves</i></b> are moves that have a book score equal to the best
+    and have a book depth that is relatively deep. Use this setting if you want
+    relatively strong play and a greater variety of moves. <b><i>All kinds of
+    moves </i></b>are moves that have a book score within 10 points of the best
+    moves. Some of these might eventually lead to a loss. Use this setting for the greatest variety
+    of book moves. If more than
+    one move meets the criteria of the book setting, then Kingsrow will select
+    one of these moves randomly. <i><b>No book</b></i> means that the opening
+    book is not used.</li>
+</menu>
+<menu>
+  <li><b>Display all scores: </b>when this box is checked, Kingsrow will
+    calculate the scores for all the moves. You can use this option, along with <b><i>No book</i></b> to explore alternative lines.
+    Calculating scores for all moves takes a lot more time than for only the best move, so do not
+use this option when you want the strongest play and only need to know the best move.
+    Kingsrow also has a problem playing the best moves in a winning endgame
+    situation when this option is turned on.</li>
+  <li><b>Solve Mode:</b> this option is for finding solutions to
+    &quot;problem&quot; positions where the solution involves sacrificing
+    several pieces before a big stroke, smother, or some other unusual winning
+    formation is achieved. Normally when kingsrow sees that a line of play has
+    lost several pieces, it reduces the search depth along that line so that
+    more promising lines can be given more CPU time and searched to a greater
+    depth. This makes kingsrow stronger in match games and for most general
+    purpose analysis. But this makes it more difficult for kingsrow to see the
+    solutions to some contrived problem positions where a number of pitches
+    occur before the winning line becomes clear. When solve mode is enabled,
+    kingsrow does very little search reduction of lines that appear to be
+    inferior. This makes it about 30 ELO weaker in match games, but it is
+    several orders of magnitude faster in solving problem positions with many
+    pitches.</li>
+  <li><b>Hashtable Memory</b>: Kingsrow uses a hashtable to store information about
+positions that it has already evaluated. Larger hashtables allow Kingsrow to do
+deep searches more quickly. 256mb is sufficient for short searches of 10 seconds
+    or less, and using more than this will not speed up short searches. Using
+    more memory for the hashtable means that less is available for the endgame
+    databases. If you are doing longer searches, or if you are using multiple
+    search threads, then you might benefit from a larger hashtable setting.</li>
+  <li><b>Endgame DB memory</b>: the endgame databases for 8, 9, and 10 piece
+    positions are much too large to load completely into RAM. Kingsrow creates a
+    cache buffer that stores the most recently used positions in RAM so they can
+    be accessed quickly. The larger you can make this cache buffer, the more
+    efficiently Kingsrow will be able to lookup positions in the database. You
+    should set the Endgame DB memory to use whatever RAM is remaining after
+    Windows has consumed what it needs. Here are some suggestions for setting the <i>Hashtable</i> and <i>Endgame Db</i>
+    memory sizes.
+    <menu>
+      <li>If your computer is running a 32-bit version of Windows:
+        <ul>
+          <li>If you have 2GB of RAM then set the <i>Endgame Db </i>memory to 1344mb
+            and the <i>Hashtable </i>to 128mb.
+          <li>If you have more than 2GB of RAM then set the <i>Endgame Db </i>memory
+            to 1536mb and the <i>Hashtable </i>to 128mb.</li>
+        </ul>
+      </li>
+      <li>If your computer is running a 64-bit version of Windows, set the <i>Endgame Db </i>memory to
+        the value that is approximately 2000mb less than the memory in your PC.
+        If your PC has more than 8gb of memory then make the difference larger
+        so you'll have more memory available to run other programs.
+      </li>
+      <li>&nbsp;Try to keep the sum of the <i>Hashtable</i> and <i>Endgame Db</i>
+        memory approximately the same. For example, if you increase the <i>Hashtable</i>
+        from 256 to 512, then subtract 256mb from the <i>Endgame Db</i> setting.
+        If you make this sum too large your searches will be very slow.</li>
+    </menu>
+  </li>
+  <li><b>More Options...</b>: Click this button to display additional engine options.</li>
+  <li><b>WLD Database options</b>
+    <menu>
+      <li><b>Max. pieces</b>: if your PC does not have enough RAM to use all the
+        database files that you have installed, you can use this option to
+        restrict Kingsrow to using a smaller subset of the files. Normally you
+        would leave this option set to &quot;No limit&quot;.</li>
+      <li><b>Enable</b>: check this box to enable the use of an endgame
+        database. Uncheck it if you do not have an endgame database or if you
+        have a special reason not to use one.</li>
+      <li><b>WLD Database Directory</b>: shows the path to the endgame database
+        files. You can type a relative or absolute path directly into this box,
+        but it is easier to use the Browse button to select the path. A relative
+        path means relative to the directory where Kingsrow is installed.</li>
+      <li><b>Browse...</b>: lets you browse to the directory where the wld
+        database files are located.</li>
+      <li><b>Check</b>: lets you check if there are wld db files in the
+        displayed directory. This is only a quick check for the presence of some
+        of the files. It does not test for all the files or verify their
+        contents.</li>
+    </menu>
+    <p>
+    Kingsrow does not initialize the endgame database drivers until you start
+    the first search. You might see a message on the status line at the bottom
+    of the Checkerboard window while the drivers are being initialized.&nbsp;After
+    you have finished the first search, click on the Checkerboard menu Engine,
+    About, and check that it says something like &quot;Using the Chinook 8-piece
+    endgame database&quot;. If instead it says &quot;Not using an endgame
+    database&quot; then you have not configured it correctly.<br>
+    <br>
+    If you change any of the hashtable or endgame db settings after the first
+    search, Kingsrow will re-initialize the endgame database on the next search
+    after your change. Usually this can be done without restarting CheckerBoard,
+    but if you have problems after this kind of change then you should exit
+    CheckerBoard and restart it.</p>
+    <p>&nbsp;</li>
+  <li><b>Auxiliary Database options</b>: Use this option to configure the MTC or
+    DTW database.
+    <menu>
+      <li><b>Enable</b>: check this box to enable the use of a DTW or MTC database.</li>
+      <li><b>Directory</b>: displays path to the database files.</li>
+      <li><b>Browse...</b>: lets you browse to the directory where the
+        database files are located.</li>
+      <li><b>Check</b>: checks if there are database files in the Directory.</li>
+    </menu>
+  </li>
+</menu>
+<blockquote>
+<p>These databases are used when the game position is a
+    &quot;database win&quot; or &quot;database loss&quot;. The WLD db gives the
+    win/loss/draw status of the position, but it does not have any information
+    about the best moves to finish the game. When kings are present it is possible that the winning side
+might keep making moves that
+    maintain its winning status without making progress towards finishing the
+    game. Kingsrow has heuristics that guide it towards the end of the game, so
+usually these auxiliary databases are not absolutely necessary, but in a small
+percentage of cases the distance to a win or conversion is beyond Kingsrow's
+search horizon. Even if Kingsrow can find a way to win, these databases allow
+Kingsrow to play the minimum path to wins directly, or indirectly via
+conversions.</p>
+
+<p>You can only use one auxiliary db at a time, so pick the one that has the
+attributes of most interest to you. Neither db requires much memory to use, they
+mainly consume disk space. The DTW db is nice in that it gives the absolute
+shortest path to a win. But because the DTW information is needed for every
+endgame position, and it does not compress well, it can only be provided for 2
+through 8 pieces. The conversion db only has to have information for positions
+where the depth to conversion is 10 or more plies, so it can exclude most
+endgame positions. This allows it to compress much better. The MTC db has data
+for 2 through 10 pieces.</p>
+
+</blockquote>
+<menu>
+  <li><b>Opening Book File</b>: displays the filename of the selected book file.
+    Kingsrow is distributed with a large opening book covering all the 3-move
+    openings. The filename of this book file is Kingsrow.odb. There may be other
+    book files on the Kingsrow web site with play on selected positions.</li>
+  <li><b>Parallel search</b>: Kingsrow detects when it is running on a computer
+    with multiple CPUs or cores and can use a separate parallel search thread
+    for each one to increase the search speed. This dialog displays the number
+    of CPUs that are detected, and allows you to set the number of search
+    threads that are used. For the fastest search you can set the number of
+    search threads equal to the number of CPUs, up to a maximum of 12.&nbsp;</li>
+</menu>
+<h3>Engine, About Menu</h3>
+<p> Use this menu command to view version information and also a summary status
+of databases and memory use.</p>
+
+<h3>Status Line </h3>
+
+<p>Kingsrow displays information about its search on the status
+line. If the opening book is turned off, a typical status line looks like this:</p>
+
+<p><font face="Fixedsys">value=-6, depth 17/19.4/33, 4.8s, 1033kN/s, pv 25-22 2-6 23-18 5-9 31-27 10-14
+24-20 14-23 27-18 6-10 26-23 10-14 28-24</font></p>
+
+<p>In this example:</p>
+
+<ul>
+    <li>-6 is Kingsrow's assessment of the value of the position.
+        Positive values are good for black, negative good for
+        white. The value of a man is 100 points. A large positive
+        or negative value of magnitude greater than 2000 indicates that Kingsrow &quot;sees&quot; a win or loss. A value of +1 or
+        -1 indicates an endgame database draw. A value of +3
+        or -3 indicates a draw by repetition.</li>
+    <li>Depth shows the nominal search depth, the average leaf
+        node depth, and the maximum search depth. Kingsrow
+        searches some lines deeper than the nominal depth and
+        other lines are searched to less than the nominal depth.
+        The average leaf node depth, shown as the middle value,
+        is the best single indication of how deep the position
+        was searched.</li>
+    <li>4.8s indicates the time that it took to search.</li>
+    <li>1033kN/s indicates the search speed in <em>thousands of
+        nodes per second</em>.</li>
+    <li>pv indicates the <em>principal variation</em>, or line of
+        best play. Because of the way the search works, this display is not always accurate or indicative of the best play.</li>
+</ul>
+
+<p align="left">A typical status line from a book move looks like this:</p>
+<dl>
+  <dd>
+    <p align="left"><font face="Fixedsys">7-11(-1/19)*  10-14(-1/24)*  13-17(-6/6)?  10-15(-8/11)?  8-11(-10/7)?  5-9(-10/2)?<br>
+    </font></dd>
+  <div align="left">
+    <dt>After each book move in parentheses are the value of the move and the
+      book depth along that line of play. If the move has an asterisk after it
+      then Kingsrow considers the quality of the move high enough to play it,
+      based on your opening book setting. If the move has a question mark after
+      it, Kingsrow will not play it. This does not necessarily mean it's an
+      inferior move. At any position Kingsrow limits the number of book moves
+      that it will play so that it can expand the selected lines more deeply.</dt>
+  </div>
+</dl>
+
+<p>If&nbsp; &quot;Display all scores&quot; is selected the
+status line looks like this:</p>
+
+<p><font face="Fixedsys">depth 15, 2.6s, 9-13,6 4-8,2 10-14,0 9-14,-8
+3-8,-8 11-16,-8&nbsp; pv 9-13 21-17 4-8 25-21 15-19
+24-15 10-19 23-16 12-19 17-14 8-12 31-27 11-16 29-25 7-11</font></p>
+
+<ul>
+    <li>depth 15 means the nominal search depth was 15 ply.</li>
+    <li>2.6s is the search time.</li>
+    <li>9-13,6 means that the move 9-13 had a score of 6</li>
+</ul>
+
+<p>If the game position is a database draw, you might see a status line that
+looks like this:</p>
+<p>11-7* (0.111), 11-6* (0.111), 14-19 (0.296), 14-10 (0.571), 31-27 (1.000)</p>
+<p>In this case Kingsrow will try to pick a move where the opponent is more
+likely to make a mistake. The numbers in parentheses are (very roughly) the
+probability that the opponent will make drawings moves for the next 2 or 3 turns
+if he picks moves at random.</p>
+
+<h3>Logfile</h3>
+
+<p>Kingsrow creates a log file under the Users directory in Documents\Ed
+Gilbert\Kingsrow. The log
+contains details about each search. If Kingsrow encounters any
+problems reading the endgame database or opening book files at startup
+then this is also reported in the log file.</p>
+
+<p>&nbsp;</p>
+
+<p>You can <a href="mailto:eygilbert@gmail.com">email me</a> with any comments or questions about
+Kingsrow.</p>
+
+<p>&nbsp;</p>
+</body>
+</html>
