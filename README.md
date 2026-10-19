@@ -15,6 +15,9 @@ The project is fully engineered to satisfy all technical specification requireme
 - [Automated Acceptance Tests](#-automated-acceptance-tests)
 - [Interactive Web Test Bench](#-interactive-web-test-bench)
 - [Production Deployment on IIS](#-production-deployment-on-iis)
+- [Docker Deployment & Containerization](#-docker-deployment--containerization)
+- [Swagger Documentation in Production](#-swagger-documentation-in-production)
+- [Linux & C++ Engine Compatibility](#-linux--c-engine-compatibility)
 - [Configuration (appsettings.json)](#-configuration-appsettingsjson)
 
 ---
@@ -243,6 +246,75 @@ Open in your browser: **`http://127.0.0.1:5114/`**
 
 ---
 
+## 🐳 Docker Deployment & Containerization
+
+The service can be containerized and run on Linux hosts, cloud Kubernetes clusters, or Windows Server.
+
+### 1. Run on Linux (via Docker Compose):
+The Linux container leverages multi-stage builds and 64-bit Wine for native execution of the Kingsrow C++ DLL without any performance penalty:
+
+```bash
+docker compose up --build -d
+```
+
+- **Interactive Web Test Bench:** `http://localhost:5114/`
+- **Swagger UI Documentation:** `http://localhost:5114/swagger`
+- **Health check endpoint:** `http://localhost:5114/healthz`
+
+To stop:
+```bash
+docker compose down
+```
+
+### 2. Manual Docker Build & Run:
+```bash
+# Build the production Linux image
+docker build -t checkers-chinook-api .
+
+# Run container binding port 5114
+docker run -d --name checkers-api -p 5114:5114 checkers-chinook-api
+```
+
+### 3. Windows Server Containers:
+For native Windows Server container environments:
+```cmd
+docker build -f Dockerfile.windows -t checkers-api-windows .
+docker run -d -p 5114:5114 checkers-api-windows
+```
+
+---
+
+## 📖 Swagger Documentation in Production
+
+Swagger and OpenAPI 3.0 documentation are configured and fully accessible in **both Development and Production** environments.
+
+- **Swagger UI URL:** `http://127.0.0.1:5114/swagger`
+- **OpenAPI JSON specification:** `http://127.0.0.1:5114/swagger/v1/swagger.json`
+- **Web UI integration:** Click the **📖 Swagger** button directly in the web test bench header.
+- **Configurable in `appsettings.json`:**
+  ```json
+  "Swagger": {
+    "Enabled": true
+  }
+  ```
+
+All endpoints (`/v1/move/suggest`, `/v1/move/validate`, `/healthz`) include full XML descriptions and response types (HTTP 200, 422, 504, 500).
+
+---
+
+## 🐧 Linux & C++ Engine Compatibility
+
+1. **Native Engine Format:**
+   The Kingsrow 8x8 checkers engine (`Kingsrow64.dll`) and endgame database driver (`egdb64.dll`) are proprietary closed-source Windows PE32+ (x86_64) Dynamic Link Libraries developed by Ed Gilbert. No official Linux ELF `.so` libraries exist.
+2. **Cross-Platform Architecture:**
+   - On **Windows**, `ChinookWorker` (`chinook.exe`) is launched directly by `EnginePool`.
+   - On **Linux / Docker**, `EnginePool` automatically detects `OSPlatform.Linux` and launches `wine64 /app/Workers/chinook.exe` headlessly (`WINEDEBUG=-all`).
+   - Because the CPU executes native x86_64 instructions directly without instruction emulation, alpha-beta search and tablebase probe speeds remain at **100% native performance**.
+3. **Full Technical Report:**
+   See detailed analysis and benchmark notes in [LINUX_COMPATIBILITY_AND_DOCKER.md](file:///e:/tsts2/Test_task/LINUX_COMPATIBILITY_AND_DOCKER.md).
+
+---
+
 ## ⚙ Configuration (appsettings.json)
 
 Located at `CheckersApp/Checkers.Api/appsettings.json`:
@@ -257,9 +329,9 @@ Located at `CheckersApp/Checkers.Api/appsettings.json`:
   "AllowedHosts": "*",
   "Engine": {
     "Type": "chinook",
-    "Path": "Workers\\chinook.exe",
+    "Path": "Workers/chinook.exe",
     "Workers": 2,
-    "Databases": "Engines\\db"
+    "Databases": "Engines/db"
   },
   "Cache": {
     "Capacity": 20000,
@@ -268,6 +340,9 @@ Located at `CheckersApp/Checkers.Api/appsettings.json`:
   "Limits": {
     "DefaultSoftTimeMs": 300,
     "DefaultHardTimeMs": 1200
+  },
+  "Swagger": {
+    "Enabled": true
   }
 }
 ```

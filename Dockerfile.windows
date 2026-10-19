@@ -1,0 +1,25 @@
+# ==============================================================================
+# Windows Container Dockerfile for Checkers Chinook & KingsRow API (.NET 8)
+# Environment: Windows Server Core / Nano Server (native Windows containers)
+# ==============================================================================
+
+# Stage 1: Build Application
+FROM mcr.microsoft.com/dotnet/sdk:8.0-windowsservercore-ltsc2022 AS build
+WORKDIR /src
+
+COPY CheckersApp/ CheckersApp/
+WORKDIR /src/CheckersApp/Checkers.Api
+RUN dotnet publish -c Release -r win-x64 --self-contained false -o /app/publish
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-ltsc2022 AS runtime
+WORKDIR /app
+
+ENV ASPNETCORE_URLS=http://0.0.0.0:5114 \
+    DOTNET_RUNNING_IN_CONTAINER=true
+
+COPY --from=build /app/publish .
+
+EXPOSE 5114
+
+ENTRYPOINT ["dotnet", "Checkers.Api.dll"]

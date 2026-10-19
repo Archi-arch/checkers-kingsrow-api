@@ -20,21 +20,57 @@ public class WorkerProcess : IDisposable
 
     public WorkerProcess(string exePath)
     {
-        var psi = new ProcessStartInfo
+        string workDir = Path.GetDirectoryName(Path.GetFullPath(exePath)) ?? "";
+        ProcessStartInfo psi;
+
+        if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
         {
-            FileName = exePath,
-            UseShellExecute = false,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
-        };
+            string wineCmd = File.Exists("/usr/local/bin/wine64") ? "/usr/local/bin/wine64"
+                : (File.Exists("/usr/lib/wine/wine64") ? "/usr/lib/wine/wine64"
+                : (File.Exists("/usr/bin/wine64") ? "/usr/bin/wine64"
+                : (File.Exists("/usr/bin/wine") ? "/usr/bin/wine" : "wine")));
+            psi = new ProcessStartInfo
+            {
+                FileName = wineCmd,
+                Arguments = $"\"{exePath}\"",
+                WorkingDirectory = workDir,
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+            psi.EnvironmentVariables["WINEDEBUG"] = "-all";
+            psi.EnvironmentVariables["WINEARCH"] = "win64";
+            psi.EnvironmentVariables["DISPLAY"] = "";
+        }
+        else
+        {
+            psi = new ProcessStartInfo
+            {
+                FileName = exePath,
+                WorkingDirectory = workDir,
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+        }
 
         _process = Process.Start(psi) ?? throw new InvalidOperationException($"Failed to start process: {exePath}");
         ChildProcessTracker.TrackProcess(_process);
         _stdin = _process.StandardInput;
         _stdout = _process.StandardOutput;
+
+        _process.ErrorDataReceived += (_, e) =>
+        {
+            if (e.Data != null) lock (_stderrLog) _stderrLog.AppendLine(e.Data);
+        };
+        _process.BeginErrorReadLine();
     }
+
+    private readonly System.Text.StringBuilder _stderrLog = new();
 
     public async Task WarmUpAsync(CancellationToken ct)
     {
@@ -43,7 +79,9 @@ public class WorkerProcess : IDisposable
             var line = await _stdout.ReadLineAsync(ct);
             if (line == null)
             {
-                throw new InvalidOperationException("Worker process terminated unexpectedly during warmup.");
+                string errText;
+                lock (_stderrLog) errText = _stderrLog.ToString();
+                throw new InvalidOperationException($"Worker process terminated unexpectedly during warmup. Stderr:\n{errText}");
             }
             if (line.Contains("READY", StringComparison.OrdinalIgnoreCase))
             {

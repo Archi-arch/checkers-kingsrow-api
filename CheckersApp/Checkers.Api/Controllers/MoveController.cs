@@ -29,7 +29,12 @@ public class MoveController : ControllerBase
         _config = config;
     }
 
+    /// <summary>
+    /// Health check endpoint to monitor engine availability and active worker pool count.
+    /// </summary>
+    /// <returns>Service status and count of active background workers.</returns>
     [HttpGet("healthz")]
+    [ProducesResponseType(typeof(HealthResponse), StatusCodes.Status200OK)]
     public IActionResult Health()
     {
         var response = new HealthResponse(
@@ -39,7 +44,16 @@ public class MoveController : ControllerBase
         return Ok(response);
     }
 
+    /// <summary>
+    /// Computes the best move for a given checkers position in PDN format using KingsRow / Chinook.
+    /// </summary>
+    /// <param name="request">PDN position, search limits, and difficulty level.</param>
+    /// <returns>Engine evaluation, best move, PV line, score, nodes, and tablebase status.</returns>
     [HttpPost("v1/move/suggest")]
+    [ProducesResponseType(typeof(SuggestResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Suggest([FromBody] SuggestRequest request)
     {
         var sw = Stopwatch.StartNew();
@@ -164,7 +178,14 @@ public class MoveController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Validates whether a move is legal according to official checkers rules (mandatory jumps, kings, simple moves).
+    /// </summary>
+    /// <param name="request">Checkers board position in PDN format and the candidate move (e.g., '14x23' or '10-15').</param>
+    /// <returns>Validation result indicating whether the move is legal.</returns>
     [HttpPost("v1/move/validate")]
+    [ProducesResponseType(typeof(ValidateResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public IActionResult Validate([FromBody] ValidateRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Position) || string.IsNullOrWhiteSpace(request.Move))

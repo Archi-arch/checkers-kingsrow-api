@@ -1,0 +1,13 @@
+**/.git
+**/.gitignore
+**/.vs/
+**/.idea/
+**/bin/
+**/obj/
+**/publish/
+**/test_worker/
+**/*_native.exe
+*.user
+*.bat
+README.md
+LINUX_COMPATIBILITY_AND_DOCKER.md

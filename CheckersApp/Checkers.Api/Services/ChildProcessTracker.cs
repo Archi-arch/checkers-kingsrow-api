@@ -53,12 +53,15 @@ public static class ChildProcessTracker
     {
         try
         {
-            foreach (var p in Process.GetProcessesByName("chinook"))
+            foreach (var p in Process.GetProcesses())
             {
                 try
                 {
-                    p.Kill();
-                    p.WaitForExit(500);
+                    if (p.ProcessName.Contains("chinook", StringComparison.OrdinalIgnoreCase))
+                    {
+                        p.Kill();
+                        p.WaitForExit(500);
+                    }
                 }
                 catch
                 {

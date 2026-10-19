@@ -1,0 +1,19 @@
+services:
+  checkers-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: checkers-api
+    ports:
+      - "5114:5114"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://0.0.0.0:5114
+      - Swagger__Enabled=true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5114/healthz"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

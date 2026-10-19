@@ -1,23 +1,121 @@
-## Build outputs and packages
+# ==============================================================================
+# .gitignore for Checkers KingsRow & Chinook REST Web API (.NET 8 + C/C++ Engine)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Build outputs, artifacts and published bundles
+# ------------------------------------------------------------------------------
 [Bb]in/
 [Oo]bj/
+[Pp]ublish/
 publish/
 dist/
+out/
+build/
+[Ww]orkers/
+test_worker/
+CheckersApp/test_worker/
+CheckersApp/Checkers.Api/Workers/
 
-## Preserve Engines directory holding native binaries, opening books, and endgame tablebases
+# Local build binaries & test executables (compiled from sources)
+CheckersApp/ChinookWorker/*.exe
+CheckersApp/ChinookWorker/chinook_native.exe
+chinook_native.exe
+
+# ------------------------------------------------------------------------------
+# CRITICAL: Preserve native KingsRow C++ Engine & Tablebase Assets
+# DO NOT ignore the proprietary 64-bit engine DLLs, opening books or endgame DBs
+# ------------------------------------------------------------------------------
 !CheckersApp/Engines/
+!CheckersApp/Engines/**
 !Engines/
+!Engines/**
 
-## Visual Studio & JetBrains IDE caches
+# ------------------------------------------------------------------------------
+# Visual Studio
+# ------------------------------------------------------------------------------
 .vs/
-.idea/
 *.user
-*.suo
 *.userosscache
 *.sln.docstates
+*.suo
+*.userprefs
+*.pidb
+*.booproj
+*.svclog
+_ReSharper*/
+*.DotSettings.user
+UpgradeLog*.XML
+UpgradeLog*.htm
 
-## Temporary and OS files
+# ------------------------------------------------------------------------------
+# JetBrains (Rider, CLion, Fleet)
+# ------------------------------------------------------------------------------
+.idea/
+*.idea/
+cmake-build-*/
+
+# ------------------------------------------------------------------------------
+# Visual Studio Code
+# ------------------------------------------------------------------------------
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# ------------------------------------------------------------------------------
+# Security, Secrets, and Local Overrides (Safe Push Protection)
+# ------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.local.json
+appsettings.Local.json
+appsettings.*.local.json
+
+# Certificates, private keys and keystores
+*.pfx
+*.p12
+*.key
+*.pem
+*.cert
+*.cer
+
+# ------------------------------------------------------------------------------
+# Test & Diagnostics Artifacts
+# ------------------------------------------------------------------------------
+[Tt]est[Rr]esults/
+*.trx
+*.coverage
+*.coveragexml
 *.log
+
+# ------------------------------------------------------------------------------
+# OS-Specific Files
+# ------------------------------------------------------------------------------
+# Windows
 Thumbs.db
+ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+*~
+*.swp
+*.swo
+
+# ------------------------------------------------------------------------------
+# Temporary and Scratch Files
+# ------------------------------------------------------------------------------
+*.tmp
+*.bak
+*.orig

@@ -4,12 +4,18 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+	</ItemGroup>
+
 	<!-- Автоматична публікація воркера та копіювання файлів рушія перед збіркою API -->
-	<Target Name="BuildWorkerBeforeApi" BeforeTargets="Build">
+	<Target Name="BuildWorkerBeforeApi" BeforeTargets="Build" Condition="'$(SkipWorkerBuild)' != 'true' And !Exists('$(TargetDir)Workers\chinook.exe')">
 		<Message Importance="high" Text="=== [Auto-Build] Publishing ChinookWorker to $(TargetDir)Workers... ===" />
-		<Exec Command="dotnet publish &quot;$(MSBuildThisFileDirectory)..\ChinookWorker\ChinookWorker.csproj&quot; -c $(Configuration) -o &quot;$(TargetDir)Workers&quot; --nologo -v q" />
+		<Exec Command="dotnet publish &quot;$(MSBuildThisFileDirectory)..\ChinookWorker\ChinookWorker.csproj&quot; -c $(Configuration) -r win-x64 --self-contained true -p:PublishSingleFile=false -o &quot;$(TargetDir)Workers&quot; --nologo -v q" />
 		<ItemGroup>
 			<EngineFiles Include="$(MSBuildThisFileDirectory)..\Engines\**\*.*" />
 		</ItemGroup>
@@ -17,7 +23,7 @@
 	</Target>
 
 	<!-- Копіювання воркера та файлів рушія до папки публікації при виконанні dotnet publish -->
-	<Target Name="PublishWorkerAfterApi" AfterTargets="Publish">
+	<Target Name="PublishWorkerAfterApi" AfterTargets="Publish" Condition="'$(SkipWorkerBuild)' != 'true'">
 		<Message Importance="high" Text="=== [Auto-Publish] Copying Workers to $(PublishDir)Workers... ===" />
 		<ItemGroup>
 			<PublishedWorkerFiles Include="$(TargetDir)Workers\**\*.*" />

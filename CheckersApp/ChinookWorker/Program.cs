@@ -9,7 +9,17 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using ChinookWorker;
 
-Console.OutputEncoding = Encoding.UTF8;
+try { Console.OutputEncoding = Encoding.UTF8; } catch { }
+try { if (Console.Out is StreamWriter sw) sw.AutoFlush = true; } catch { }
+
+string logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "worker_startup.log");
+void Log(string msg) {
+    try {
+        File.AppendAllText(logFile, $"[{DateTime.UtcNow:O}] {msg}\n");
+    } catch { }
+}
+
+Log("ChinookWorker starting...");
 
 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
 string engineDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -17,7 +27,7 @@ string engineDir = AppDomain.CurrentDomain.BaseDirectory;
 [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 static extern bool SetDllDirectory(string lpPathName);
 
-SetDllDirectory(engineDir);
+try { SetDllDirectory(engineDir); Log("SetDllDirectory succeeded"); } catch (Exception e) { Log($"SetDllDirectory failed: {e.Message}"); }
 Environment.CurrentDirectory = engineDir;
 
 string egdbPath = Path.Combine(engineDir, "egdb64.dll");
@@ -25,12 +35,19 @@ string kingsrowPath = Path.Combine(engineDir, "Kingsrow64.dll");
 
 try
 {
-    if (File.Exists(egdbPath)) NativeLibrary.Load(egdbPath);
+    Log($"Checking egdbPath: {egdbPath} exists={File.Exists(egdbPath)}");
+    if (File.Exists(egdbPath)) {
+        NativeLibrary.Load(egdbPath);
+        Log("egdb64.dll loaded successfully");
+    }
+    Log($"Loading kingsrowPath: {kingsrowPath} exists={File.Exists(kingsrowPath)}");
     var krHandle = NativeLibrary.Load(kingsrowPath);
+    Log($"Kingsrow64.dll loaded successfully at 0x{krHandle.ToString("X")}");
     Console.WriteLine($"[INIT] Kingsrow64.dll loaded successfully at 0x{krHandle.ToString("X")}");
 }
 catch (Exception ex)
 {
+    Log($"Initialization error: {ex}");
     Console.WriteLine($"[ERROR] Initialization failed: {ex.Message}");
     return;
 }
@@ -40,18 +57,27 @@ string dbPath = Path.Combine(engineDir, "db");
 var reply = new StringBuilder(1024);
 if (Directory.Exists(dbPath))
 {
-    CheckerBoard.enginecommand($"set edgpath {dbPath}", reply);
-    CheckerBoard.enginecommand($"set egdbpath {dbPath}", reply);
-    CheckerBoard.enginecommand($"set dbpath {dbPath}", reply);
+    Log($"Attaching endgame databases from {dbPath}...");
+    try {
+        CheckerBoard.enginecommand($"set edgpath {dbPath}", reply);
+        CheckerBoard.enginecommand($"set egdbpath {dbPath}", reply);
+        CheckerBoard.enginecommand($"set dbpath {dbPath}", reply);
+        Log("Endgame database paths configured");
+    } catch (Exception ex) {
+        Log($"enginecommand error: {ex}");
+    }
 }
 
+Log("Sending READY signal");
 Console.WriteLine("READY");
+Console.Out.Flush();
 
 string? currentPdn = null;
 
 while (true)
 {
     var line = Console.ReadLine();
+    if (line == null) break;
     if (string.IsNullOrWhiteSpace(line)) continue;
     if (line.Trim().Equals("QUIT", StringComparison.OrdinalIgnoreCase)) break;
 
