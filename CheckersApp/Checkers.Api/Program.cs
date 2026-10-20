@@ -123,7 +123,10 @@ if (!isUnderIis && !isContainer && !isLinux && Environment.GetEnvironmentVariabl
 
 try
 {
-    var effectivePort = Environment.GetEnvironmentVariable("PORT") ?? "5114";
+    string? cmdUrl = args.FirstOrDefault(a => a.StartsWith("--urls="))?.Substring(7);
+    string effectivePort = Environment.GetEnvironmentVariable("PORT")
+        ?? (cmdUrl != null && Uri.TryCreate(cmdUrl, UriKind.Absolute, out var parsedUri) ? parsedUri.Port.ToString() : null)
+        ?? "5114";
     Console.WriteLine("==========================================================");
     Console.WriteLine("  Checkers Chinook & KingsRow API Server (.NET 8)");
     Console.WriteLine($"  Web UI:  http://0.0.0.0:{effectivePort}");
