@@ -27,5 +27,5 @@ services:
       - key: Limits__DefaultSoftTimeMs
         value: "250"
       - key: Limits__DefaultHardTimeMs
-        value: "5000"
+        value: "20000"
 

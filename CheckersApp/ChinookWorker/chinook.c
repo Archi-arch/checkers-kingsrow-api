@@ -287,9 +287,9 @@ int main(void) {
             char statusBuffer[4096] = {0};
             volatile int playNow = 0;
 
-            // Maximum time KingsRow is permitted to search before being forced to return
-            DWORD watchdogTimeoutMs = (DWORD)(softTimeSec * 1000.0) + 400;
-            if (watchdogTimeoutMs < 750) watchdogTimeoutMs = 750;
+            // Watchdog limit: allow deep search, only force return at 18 seconds to guarantee
+            // the HTTP response completes safely before the 20-second timeout
+            DWORD watchdogTimeoutMs = tablebaseHit ? 500 : 18000;
 
             WatchdogContext wdCtx;
             wdCtx.pPlayNow = &playNow;

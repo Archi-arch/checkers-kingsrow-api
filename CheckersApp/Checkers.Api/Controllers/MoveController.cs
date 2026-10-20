@@ -110,9 +110,13 @@ public class MoveController : ControllerBase
             }
         }
 
-        // 4. Invoke worker with Hard Timeout safeguard (504 on timeout)
-        int defaultHard = _config.GetValue<int>("Limits:DefaultHardTimeMs", 4000);
-        int hardTimeMs = request.Limits?.HardTimeMs ?? Math.Max(defaultHard, softTimeMs + 2500);
+        // 4. Invoke worker with Hard Timeout safeguard (504 on timeout; 20 seconds default for cloud stability)
+        int defaultHard = _config.GetValue<int>("Limits:DefaultHardTimeMs", 20000);
+        int hardTimeMs = request.Limits?.HardTimeMs ?? defaultHard;
+        if (hardTimeMs < 15000)
+        {
+            hardTimeMs = Math.Max(defaultHard, 20000);
+        }
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(
             HttpContext.RequestAborted,
