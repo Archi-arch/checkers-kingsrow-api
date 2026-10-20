@@ -1,0 +1,26 @@
+# ==============================================================================
+# Render Blueprint (render.yaml) for Checkers Chinook & KingsRow REST Web API
+# Docs: https://render.com/docs/blueprint-spec
+# ==============================================================================
+
+services:
+  - type: web
+    name: checkers-kingsrow-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: frankfurt
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: Swagger__Enabled
+        value: "true"
+      - key: Engine__Workers
+        value: "2"
+      - key: DOTNET_gcServer
+        value: "0"
+      - key: DOTNET_RUNNING_IN_CONTAINER
+        value: "true"

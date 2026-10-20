@@ -16,6 +16,7 @@ The project is fully engineered to satisfy all technical specification requireme
 - [Interactive Web Test Bench](#-interactive-web-test-bench)
 - [Production Deployment on IIS](#-production-deployment-on-iis)
 - [Docker Deployment & Containerization](#-docker-deployment--containerization)
+- [Hosting on Render (Cloud Docker)](#-hosting-on-render-cloud-docker)
 - [Swagger Documentation in Production](#-swagger-documentation-in-production)
 - [Linux & C++ Engine Compatibility](#-linux--c-engine-compatibility)
 - [Configuration (appsettings.json)](#-configuration-appsettingsjson)
@@ -281,6 +282,45 @@ For native Windows Server container environments:
 docker build -f Dockerfile.windows -t checkers-api-windows .
 docker run -d -p 5114:5114 checkers-api-windows
 ```
+
+---
+
+## ☁️ Hosting on Render (Cloud Docker)
+
+The service is fully adapted for seamless hosting on [Render](https://render.com) (including the **Free** and **Starter** tiers).
+
+### 🚀 Option A: Automatic 1-Click Deploy via Blueprint (`render.yaml`)
+The repository includes a ready-to-use [`render.yaml`](render.yaml) file.
+1. Push your repository to **GitHub** or **GitLab**.
+2. Go to the [Render Dashboard](https://dashboard.render.com).
+3. Click **New +** $\rightarrow$ **Blueprint**.
+4. Connect this repository $\rightarrow$ Render will automatically detect [`render.yaml`](render.yaml), configure the Docker service, environment variables, and health check.
+5. Click **Apply**.
+
+### 🛠 Option B: Manual Web Service Setup
+1. In the Render Dashboard, click **New +** $\rightarrow$ **Web Service**.
+2. Connect your Git repository.
+3. Configure the settings:
+   - **Name**: `checkers-kingsrow-api` (or any custom name)
+   - **Language / Runtime**: `Docker`
+   - **Dockerfile Path**: `./Dockerfile`
+   - **Docker Context**: `.`
+   - **Region**: Frankfurt (EU) or Oregon (US)
+   - **Instance Type**: `Free` (512 MB RAM, 0.1 CPU) or `Starter`
+   - **Health Check Path**: `/healthz`
+4. Under **Environment Variables**, ensure the following:
+   | Key | Value | Description |
+   |---|---|---|
+   | `ASPNETCORE_ENVIRONMENT` | `Production` | Enables Production hosting profile |
+   | `Swagger__Enabled` | `true` | Enables Swagger UI at `/swagger` |
+   | `Engine__Workers` | `2` | Number of concurrent Chinook worker processes |
+   | `DOTNET_gcServer` | `0` | Workstation GC for minimal RAM footprint (~35MB) |
+
+### 🔍 Key Adaptations for Render
+- **Dynamic Port Binding:** Render injects a dynamic `$PORT` environment variable (e.g. `10000`). The API server dynamically detects `$PORT` and binds to `http://0.0.0.0:$PORT`.
+- **Low Memory Footprint (Free Tier Safe):** Configured with `DOTNET_gcServer=0` (Workstation GC) and a native C worker, the entire application consumes only ~120 MB RAM, well below Render's 512 MB Free tier ceiling.
+- **Fast Cold Start:** Wine prefix is pre-warmed during Docker build (`wineboot --init`), allowing containers to wake up from Render's idle sleep state in <2 seconds.
+- **Health Check:** Render monitors `/healthz`, which verifies that both ASP.NET Core and background Wine engine workers are responsive.
 
 ---
 

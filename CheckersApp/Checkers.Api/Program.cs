@@ -8,11 +8,17 @@ ChildProcessTracker.KillOrphanedChinookProcesses();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure default port 5114 (0.0.0.0 allows container and network access)
-if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")) && !args.Any(a => a.StartsWith("--urls=")))
+// Configure listening port (Render and cloud hosts provide PORT; default to 5114 or ASPNETCORE_URLS)
+var renderPort = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(renderPort))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{renderPort}");
+}
+else if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")) && !args.Any(a => a.StartsWith("--urls=")))
 {
     builder.WebHost.UseUrls("http://0.0.0.0:5114");
 }
+
 
 // Register controllers
 builder.Services.AddControllers();
@@ -79,9 +85,13 @@ app.UseCors();
 app.UseAuthorization();
 app.MapControllers();
 
-// Endpoint for graceful shutdown from the web UI
-app.MapPost("/shutdown", (IHostApplicationLifetime lifetime) =>
+// Endpoint for graceful shutdown from the web UI (guarded in production cloud environments)
+app.MapPost("/shutdown", (IHostApplicationLifetime lifetime, IWebHostEnvironment env) =>
 {
+    if (env.IsProduction() && Environment.GetEnvironmentVariable("ALLOW_REMOTE_SHUTDOWN") != "true")
+    {
+        return Results.Json(new { message = "Remote shutdown is disabled in production hosting environments." }, statusCode: 403);
+    }
     _ = Task.Run(async () =>
     {
         await Task.Delay(200);
@@ -113,10 +123,11 @@ if (!isUnderIis && !isContainer && !isLinux && Environment.GetEnvironmentVariabl
 
 try
 {
+    var effectivePort = Environment.GetEnvironmentVariable("PORT") ?? "5114";
     Console.WriteLine("==========================================================");
     Console.WriteLine("  Checkers Chinook & KingsRow API Server (.NET 8)");
-    Console.WriteLine("  Web UI:  http://127.0.0.1:5114");
-    Console.WriteLine("  Swagger: http://127.0.0.1:5114/swagger");
+    Console.WriteLine($"  Web UI:  http://0.0.0.0:{effectivePort}");
+    Console.WriteLine($"  Swagger: http://0.0.0.0:{effectivePort}/swagger");
     Console.WriteLine("  Press Ctrl+C in this console to stop the server.");
     Console.WriteLine("==========================================================");
     app.Run();

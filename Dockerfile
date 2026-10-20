@@ -58,24 +58,27 @@ RUN dpkg --add-architecture amd64 && \
     && ln -sf /usr/lib/wine/wine64 /usr/local/bin/wine \
     && rm -rf /var/lib/apt/lists/*
 
-# Configure headless Wine environment
+# Configure headless Wine environment and Render cloud hosting optimizations
 ENV WINEARCH=win64 \
     WINEDEBUG=-all \
+    DISPLAY="" \
     DOTNET_RUNNING_IN_CONTAINER=true \
-    ASPNETCORE_URLS=http://0.0.0.0:5114
+    DOTNET_gcServer=0 \
+    PORT=5114
 
-# Pre-initialize Wine prefix at build time
+# Pre-initialize Wine prefix at build time for fast cold starts
 RUN wineboot --init || true
 
 # Copy published application and worker bundle
 COPY --from=build /app/publish .
 
-# Expose HTTP port for API, Swagger, and Web Test Bench
+# Expose HTTP ports (5114 for local Docker Compose, 10000 for Render default)
 EXPOSE 5114
+EXPOSE 10000
 
-# Container health monitoring
+# Container health monitoring (dynamically adapts to Render $PORT)
 HEALTHCHECK --interval=20s --timeout=5s --start-period=15s --retries=3 \
-    CMD curl -f http://localhost:5114/healthz || exit 1
+    CMD sh -c "curl -f http://localhost:\${PORT:-5114}/healthz || exit 1"
 
 # Launch ASP.NET Core API server
 ENTRYPOINT ["dotnet", "Checkers.Api.dll"]
