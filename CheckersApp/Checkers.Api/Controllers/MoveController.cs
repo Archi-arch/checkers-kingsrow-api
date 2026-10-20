@@ -76,12 +76,10 @@ public class MoveController : ControllerBase
         }
 
         // 3. Determine level limits and check for <= 8 pieces (Tablebase Probe)
-        int defaultSoft = _config.GetValue<int>("Limits:DefaultSoftTimeMs", 300);
-        int defaultHard = _config.GetValue<int>("Limits:DefaultHardTimeMs", 1200);
+        int defaultSoft = _config.GetValue<int>("Limits:DefaultSoftTimeMs", 250);
 
         int depth;
         int softTimeMs;
-        int hardTimeMs = request.Limits?.HardTimeMs ?? defaultHard;
 
         bool isTablebasePosition = pieceCount <= 8;
 
@@ -113,6 +111,9 @@ public class MoveController : ControllerBase
         }
 
         // 4. Invoke worker with Hard Timeout safeguard (504 on timeout)
+        int defaultHard = _config.GetValue<int>("Limits:DefaultHardTimeMs", 4000);
+        int hardTimeMs = request.Limits?.HardTimeMs ?? Math.Max(defaultHard, softTimeMs + 2500);
+
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(
             HttpContext.RequestAborted,
             new CancellationTokenSource(TimeSpan.FromMilliseconds(hardTimeMs)).Token

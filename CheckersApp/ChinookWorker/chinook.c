@@ -38,6 +38,22 @@ typedef int (__stdcall *enginecommand_fn)(const char *command, char *reply);
 static getmove_fn getmove = NULL;
 static enginecommand_fn enginecommand = NULL;
 
+typedef struct {
+    volatile int *pPlayNow;
+    HANDLE hStopEvent;
+    DWORD timeoutMs;
+} WatchdogContext;
+
+static DWORD WINAPI WatchdogThreadProc(LPVOID lpParam) {
+    WatchdogContext *ctx = (WatchdogContext *)lpParam;
+    DWORD res = WaitForSingleObject(ctx->hStopEvent, ctx->timeoutMs);
+    if (res == WAIT_TIMEOUT) {
+        *(ctx->pPlayNow) = 1; // Signal KingsRow to abort search and return current best move immediately
+    }
+    return 0;
+}
+
+
 static inline Coor number_to_coor(int number) {
     int n = number - 1;
     int y = n / 4;
@@ -269,11 +285,29 @@ int main(void) {
             CBmove move;
             memset(&move, 0, sizeof(move));
             char statusBuffer[4096] = {0};
-            int playNow = 0;
+            volatile int playNow = 0;
+
+            // Maximum time KingsRow is permitted to search before being forced to return
+            DWORD watchdogTimeoutMs = (DWORD)(softTimeSec * 1000.0) + 400;
+            if (watchdogTimeoutMs < 750) watchdogTimeoutMs = 750;
+
+            WatchdogContext wdCtx;
+            wdCtx.pPlayNow = &playNow;
+            wdCtx.hStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+            wdCtx.timeoutMs = watchdogTimeoutMs;
+
+            HANDLE hWatchdog = CreateThread(NULL, 0, WatchdogThreadProc, &wdCtx, 0, NULL);
 
             DWORD startTick = GetTickCount();
-            getmove(board, turn, softTimeSec, statusBuffer, &playNow, 0, 0, &move);
+            getmove(board, turn, softTimeSec, statusBuffer, (int*)&playNow, 0, 0, &move);
             DWORD elapsedMs = GetTickCount() - startTick;
+
+            SetEvent(wdCtx.hStopEvent);
+            if (hWatchdog) {
+                WaitForSingleObject(hWatchdog, 500);
+                CloseHandle(hWatchdog);
+            }
+            CloseHandle(wdCtx.hStopEvent);
 
             char bestMove[64];
             move_to_pdn(&move, statusBuffer, bestMove, sizeof(bestMove));

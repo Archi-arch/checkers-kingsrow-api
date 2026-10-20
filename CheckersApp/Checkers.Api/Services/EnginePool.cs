@@ -163,7 +163,7 @@ public class WorkerSlot : IDisposable
         try
         {
             _process = new WorkerProcess(_exePath);
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(25));
             _process.WarmUpAsync(cts.Token).GetAwaiter().GetResult();
             _adapter = new ChinookCliAdapter(_process);
             _logger.LogInformation("Worker process restarted successfully.");
